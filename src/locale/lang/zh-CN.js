@@ -156,6 +156,7 @@ export default {
     enableDiscordRichPresence: '启用 Discord Rich Presence',
     enableGlobalShortcut: '启用全局快捷键',
     showLibraryDefault: '启动后显示音乐库',
+    subTitleDefault: '副标题使用别名',
     lyricsBackground: {
       text: '显示歌词背景',
       off: '关闭',
@@ -179,6 +180,7 @@ export default {
     addToPlaylist: '添加到歌单',
     searchInPlaylist: '歌单内搜索',
     copyUrl: '复制链接',
+    openInBrowser: '在浏览器中打开',
     allPlaylists: '全部歌单',
     minePlaylists: '创建的歌单',
     likedPlaylists: '收藏的歌单',

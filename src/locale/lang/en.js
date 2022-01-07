@@ -155,6 +155,7 @@ export default {
     enableDiscordRichPresence: 'Enable Discord Rich Presence',
     enableGlobalShortcut: 'Enable Global Shortcut',
     showLibraryDefault: 'Show library default',
+    subTitleDefault: 'Sub title alia default',
     lyricsBackground: {
       text: 'Show Lyrics Background',
       off: 'Off',
@@ -178,6 +179,7 @@ export default {
     addToPlaylist: 'Add to playlist',
     searchInPlaylist: 'Search in playlist',
     copyUrl: 'Copy URL',
+    openInBrowser: 'Open in Browser',
     allPlaylists: 'All Playlists',
     minePlaylists: 'My Playlists',
     likedPlaylists: 'Liked Playlists',

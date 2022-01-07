@@ -26,6 +26,49 @@ const log = text => {
   console.log(`${clc.blueBright('[background.js]')} ${text}`);
 };
 
+const closeOnLinux = (e, win, store) => {
+  let closeOpt = store.get('settings.closeAppOption');
+  if (closeOpt !== 'exit') {
+    e.preventDefault();
+  }
+
+  if (closeOpt === 'ask') {
+    dialog
+      .showMessageBox({
+        type: 'info',
+        title: 'Information',
+        cancelId: 2,
+        defaultId: 0,
+        message: '确定要关闭吗？',
+        buttons: ['最小化到托盘', '直接退出'],
+        checkboxLabel: '记住我的选择',
+      })
+      .then(result => {
+        if (result.checkboxChecked && result.response !== 2) {
+          win.webContents.send(
+            'rememberCloseAppOption',
+            result.response === 0 ? 'minimizeToTray' : 'exit'
+          );
+        }
+
+        if (result.response === 0) {
+          win.hide(); //调用 最小化实例方法
+        } else if (result.response === 1) {
+          win = null;
+          app.exit(); //exit()直接关闭客户端，不会执行quit();
+        }
+      })
+      .catch(err => {
+        log(err);
+      });
+  } else if (closeOpt === 'exit') {
+    win = null;
+    app.quit();
+  } else {
+    win.hide();
+  }
+};
+
 const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -43,7 +86,7 @@ class Background {
     });
     this.neteaseMusicAPI = null;
     this.expressApp = null;
-    this.willQuitApp = isMac ? false : true;
+    this.willQuitApp = !isMac;
 
     this.init();
   }
@@ -207,7 +250,9 @@ class Background {
     this.window.on('close', e => {
       log('window close event');
 
-      if (isMac) {
+      if (isLinux) {
+        closeOnLinux(e, this.window, this.store);
+      } else if (isMac) {
         if (this.willQuitApp) {
           this.window = null;
           app.quit();
@@ -302,10 +347,12 @@ class Background {
       }
 
       // create dock menu for macOS
-      app.dock.setMenu(createDockMenu(this.window));
+      const createdDockMenu = createDockMenu(this.window);
+      if (createDockMenu && app.dock) app.dock.setMenu(createdDockMenu);
 
       // create touch bar
-      this.window.setTouchBar(createTouchBar(this.window));
+      const createdTouchBar = createTouchBar(this.window);
+      if (createdTouchBar) this.window.setTouchBar(createdTouchBar);
 
       // register global shortcuts
       if (this.store.get('settings.enableGlobalShortcut') !== false) {
@@ -342,6 +389,18 @@ class Background {
       // unregister all global shortcuts
       globalShortcut.unregisterAll();
     });
+
+    if (!isMac) {
+      app.on('second-instance', (e, cl, wd) => {
+        if (this.window) {
+          this.window.show();
+          if (this.window.isMinimized()) {
+            this.window.restore();
+          }
+          this.window.focus();
+        }
+      });
+    }
   }
 }
 
